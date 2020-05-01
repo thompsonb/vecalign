@@ -139,6 +139,20 @@ Note that LASER will not overwrite an embedding file if it exsts, so you may nee
 
 ### Publications
 
-Vecalign is described in detail in: 
-Vecalign: Improved Sentence Alignment in Linear Time and Space. Brian Thompson and Philipp Koehn. To appear in Proceedings of EMNLP 2019, Hong Kong, November 2019. 
+If you use Vecalign, please cite our [paper](https://www.aclweb.org/anthology/D19-1136.pdf):
+
+```
+@inproceedings{thompson-koehn-2019-vecalign,
+    title = "{V}ecalign: Improved Sentence Alignment in Linear Time and Space",
+    author = "Thompson, Brian and Koehn, Philipp",
+    booktitle = "Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP)",
+    month = nov,
+    year = "2019",
+    address = "Hong Kong, China",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/D19-1136",
+    doi = "10.18653/v1/D19-1136",
+    pages = "1342--1348",
+}
+```
 
