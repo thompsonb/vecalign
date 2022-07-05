@@ -132,9 +132,11 @@ The following assumes LASER is installed and the LASER environmental variable ha
 
 To embed the Bleualign files using LASER:
 ```
-$LASER/tasks/embed/embed.sh bleualign_data/overlaps.fr fr bleualign_data/overlaps.fr.emb
-$LASER/tasks/embed/embed.sh bleualign_data/overlaps.de de bleualign_data/overlaps.de.emb
+$LASER/tasks/embed/embed.sh bleualign_data/overlaps.fr bleualign_data/overlaps.fr.emb [fra]
+$LASER/tasks/embed/embed.sh bleualign_data/overlaps.de bleualign_data/overlaps.de.emb [deu]
 ```
+
+> Please always refer [here](https://github.com/facebookresearch/LASER/blob/main/tasks/embed/README.md) for the latest usage of this script. The usage may vary across the different versions of LASER.
 
 Note that LASER will not overwrite an embedding file if it exsts, so you may need to run first `rm bleualign_data/overlaps.fr.emb bleualign_data/overlaps.de.emb`.
 
