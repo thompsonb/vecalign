@@ -89,6 +89,9 @@ def _main():
     parser.add_argument('--debug_save_stack', type=str,
                         help='Write stack to pickle file for debug purposes')
 
+    parser.add_argument('--print_aligned_text', action='store_true',
+                        help='Print aligned text in addition to alignments, for debugging/tuning.')
+
     args = parser.parse_args()
 
     if len(args.src) != len(args.tgt):
@@ -141,7 +144,9 @@ def _main():
                          num_samps_for_norm=args.num_samps_for_norm)
 
         # write final alignments to stdout
-        print_alignments(stack[0]['final_alignments'], stack[0]['alignment_scores'])
+        print_alignments(stack[0]['final_alignments'], scores=stack[0]['alignment_scores'],
+                         src_lines=src_lines if args.print_aligned_text else None,
+                         tgt_lines=tgt_lines if args.print_aligned_text else None)
 
         test_alignments.append(stack[0]['final_alignments'])
         stack_list.append(stack)

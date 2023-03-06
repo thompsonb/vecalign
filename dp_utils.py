@@ -144,13 +144,17 @@ def read_alignments(fin):
     return alignments
 
 
-def print_alignments(alignments, scores=None, file=sys.stdout):
-    if scores is not None:
-        for (x, y), s in zip(alignments, scores):
-            print('%s:%s:%.6f' % (x, y, s), file=file)
-    else:
-        for x, y in alignments:
-            print('%s:%s' % (x, y), file=file)
+def print_alignments(alignments, scores=None, src_lines=None, tgt_lines=None, ofile=sys.stdout):
+    if scores is None:
+        scores = [None for _ in alignments]
+    for (x, y), s in zip(alignments, scores):
+        if s is None:
+            print('%s:%s' % (x, y), file=ofile)
+        else:
+            print('%s:%s:%.6f' % (x, y, s), file=ofile)
+        if src_lines is not None and tgt_lines is not None:
+            print(' '*40, 'SRC: ', ' '.join([src_lines[i].replace('\n', ' ').strip() for i in x]), file=ofile)
+            print(' '*40, 'TGT: ', ' '.join([tgt_lines[i].replace('\n', ' ').strip() for i in y]), file=ofile)
 
 
 class DeletionKnob(object):
