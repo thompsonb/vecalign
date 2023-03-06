@@ -31,7 +31,7 @@ consoleHandler = logging.StreamHandler()
 consoleHandler.setFormatter(logFormatter)
 logger.addHandler(consoleHandler)
 
-from dp_utils import make_alignment_types, print_alignments, read_alignments, \
+from dp_utils import make_alignment_types, make_one_to_many_alignment_types, print_alignments, read_alignments, \
     read_in_embeddings, make_doc_embedding, vecalign
 
 from score import score_multiple, log_final_scores
@@ -62,6 +62,11 @@ def _main():
 
     parser.add_argument('-a', '--alignment_max_size', type=int, default=4,
                         help='Searches for alignments up to size N-M, where N+M <= this value. Note that the the embeddings must support the requested number of overlaps')
+
+    # without flag: one_to_many==default, with flag but no argument: one_to_many==const, with flag and argument: one_to_many==argument
+    parser.add_argument('--one_to_many', type=int, nargs='?', default=None, const=50,
+                        help='Perform one to many (e.g. 1:1, 1:2, ... 1:M) alignment.'
+                        ' Argument specifies M but will default to 50 if flag is set but no argument is provided. Overrides --alignment_max_size (-a).')
 
     parser.add_argument('-d', '--del_percentile_frac', type=float, default=0.2,
                         help='Deletion penalty is set to this percentile (as a fraction) of the cost matrix distribution. Should be between 0 and 1.')
@@ -104,7 +109,10 @@ def _main():
     src_sent2line, src_line_embeddings = read_in_embeddings(args.src_embed[0], args.src_embed[1])
     tgt_sent2line, tgt_line_embeddings = read_in_embeddings(args.tgt_embed[0], args.tgt_embed[1])
 
-    width_over2 = ceil(args.alignment_max_size / 2.0) + args.search_buffer_size
+    src_max_alignment_size = 1 if args.one_to_many is not None else args.alignment_max_size
+    tgt_max_alignment_size = args.one_to_many if args.one_to_many is not None else args.alignment_max_size
+
+    width_over2 = ceil(max(src_max_alignment_size, tgt_max_alignment_size) / 2.0) + args.search_buffer_size
 
     test_alignments = []
     stack_list = []
@@ -112,12 +120,15 @@ def _main():
         logger.info('Aligning src="%s" to tgt="%s"', src_file, tgt_file)
 
         src_lines = open(src_file, 'rt', encoding="utf-8").readlines()
-        vecs0 = make_doc_embedding(src_sent2line, src_line_embeddings, src_lines, args.alignment_max_size)
+        vecs0 = make_doc_embedding(src_sent2line, src_line_embeddings, src_lines, src_max_alignment_size)
 
         tgt_lines = open(tgt_file, 'rt', encoding="utf-8").readlines()
-        vecs1 = make_doc_embedding(tgt_sent2line, tgt_line_embeddings, tgt_lines, args.alignment_max_size)
+        vecs1 = make_doc_embedding(tgt_sent2line, tgt_line_embeddings, tgt_lines, tgt_max_alignment_size)
 
-        final_alignment_types = make_alignment_types(args.alignment_max_size)
+        if args.one_to_many is not None:
+            final_alignment_types = make_one_to_many_alignment_types(args.one_to_many)
+        else:
+            final_alignment_types = make_alignment_types(args.alignment_max_size)
         logger.debug('Considering alignment types %s', final_alignment_types)
 
         stack = vecalign(vecs0=vecs0,

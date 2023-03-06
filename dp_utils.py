@@ -192,12 +192,22 @@ class DeletionKnob(object):
 
 
 def make_alignment_types(max_alignment_size):
-    # return list of all (n,m) where n+m <= this
+    # return list of all (n,m) where n+m <= max_alignment_size
+    # does not include deletions, i.e. (1, 0) or (0, 1)
     alignment_types = []
     for x in range(1, max_alignment_size):
         for y in range(1, max_alignment_size):
             if x + y <= max_alignment_size:
                 alignment_types.append((x, y))
+    return alignment_types
+
+
+def make_one_to_many_alignment_types(max_alignment_size):
+    # return list of all (1, m) where m <= max_alignment_size
+    # does not include deletions, i.e. (1, 0) or (0, 1)
+    alignment_types = []
+    for m in range(1, max_alignment_size + 1):
+        alignment_types.append((1, m))
     return alignment_types
 
 
