@@ -66,6 +66,11 @@ def read_in_embeddings(text_file, embed_file):
     if line_embeddings.size == 0:
         raise Exception('Got empty embedding file')
 
+    if line_embeddings.size % len(sent2line) != 0:
+        raise Exception('Number of floating point values in %s (%d) '
+                        'is not a multiple of the number of lines '
+                        'in %s (%d)' % (embed_file, line_embeddings.size, text_file, len(sent2line)))
+
     laser_embedding_size = line_embeddings.size // len(sent2line)  # currently hardcoded to 1024
     if laser_embedding_size != 1024:
         logger.warning('expected an embedding size of 1024, got %s', laser_embedding_size)
