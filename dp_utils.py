@@ -30,6 +30,8 @@ from dp_core import make_dense_costs, score_path, sparse_dp, make_sparse_costs, 
 
 logger = logging.getLogger('vecalign')  # set up in vecalign.py
 
+MAX_LINE_CHARS = 10000  # do not encode arbitrarily long sentences
+
 
 def preprocess_line(line):
     line = line.strip()
@@ -43,7 +45,7 @@ def yield_overlaps(lines, num_overlaps):
     for overlap in range(1, num_overlaps + 1):
         for out_line in layer(lines, overlap):
             # check must be here so all outputs are unique
-            out_line2 = out_line[:10000]  # limit line so dont encode arbitrarily long sentences
+            out_line2 = out_line[:MAX_LINE_CHARS]
             yield out_line2
 
 
@@ -86,6 +88,8 @@ def make_doc_embedding(sent2line, line_embeddings, lines, num_overlaps):
 
     for ii, overlap in enumerate(range(1, num_overlaps + 1)):
         for jj, out_line in enumerate(layer(lines, overlap)):
+            # match the truncation applied in yield_overlaps
+            out_line = out_line[:MAX_LINE_CHARS]
             try:
                 line_id = sent2line[out_line]
             except KeyError:
