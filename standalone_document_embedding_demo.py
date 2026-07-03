@@ -24,24 +24,31 @@ following https://aclanthology.org/2020.emnlp-main.483
 
 import numpy as np
 
-from mcerp import PERT  # pip install mcerp  # see https://github.com/tisimst/mcerp/blob/master/mcerp/__init__.py
-
 
 NUM_TIME_SLOTS = 16
 PERT_G = 20
 
 
-# PERT is very slow (50ms per distribution) so we cache a bank of PERT distributions
+def pert_pdf_normalized(xx, peak, g=PERT_G, low=-0.001, high=1.001):
+    # A PERT distribution is a Beta distribution reparameterized by (low, peak, high, g).
+    a, b, c = low, peak, high
+    mu = (a + g * b + c) / (g + 2)
+    if mu == b:  # special case where g has no effect
+        a1 = a2 = 3.0
+    else:
+        a1 = ((mu - a) * (2 * b - a - c)) / ((b - mu) * (c - a))
+        a2 = a1 * (c - mu) / (mu - a)
+    t = (xx - a) / (c - a)  # map support to [0, 1]
+    yy = t ** (a1 - 1) * (1 - t) ** (a2 - 1)
+    return yy / np.sum(yy)
+
+
+# Cache a bank of PERT distributions
 _num_banks = 100
 _xx = np.linspace(start=0, stop=1, num=NUM_TIME_SLOTS)
 PERT_BANKS = []
 for _pp in np.linspace(0, 1, num=_num_banks):
-    if _pp == 0.5:  # some special case that makes g do nothing
-        _pp += 0.001
-    pert = PERT(low=-0.001, peak=_pp, high=1.001, g=PERT_G, tag=None)
-    _yy = pert.rv.pdf(_xx)
-    _yy = _yy / sum(_yy)  # normalize
-    PERT_BANKS.append(_yy)
+    PERT_BANKS.append(pert_pdf_normalized(_xx, peak=_pp))
 
 
 np.set_printoptions(threshold=50, precision=5)

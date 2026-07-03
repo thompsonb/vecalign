@@ -38,7 +38,6 @@ conda activate vecalign
 # Install required packages
 conda install -y -c anaconda cython
 conda install -y -c anaconda numpy
-pip install mcerp 
 ```
 
 Note that Vecalign contains cython code, but there is no need to build it manually as it is compiled automatically by [pyximport](https://github.com/cython/cython/tree/master/pyximport).
