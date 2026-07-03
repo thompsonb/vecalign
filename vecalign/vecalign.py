@@ -31,13 +31,13 @@ consoleHandler = logging.StreamHandler()
 consoleHandler.setFormatter(logFormatter)
 logger.addHandler(consoleHandler)
 
-from dp_utils import make_alignment_types, make_one_to_many_alignment_types, print_alignments, read_alignments, \
+from .dp_utils import make_alignment_types, make_one_to_many_alignment_types, print_alignments, read_alignments, \
     read_in_embeddings, make_doc_embedding, vecalign
 
-from score import score_multiple, log_final_scores
+from .score import score_multiple, log_final_scores
 
 
-def _main():
+def main():
     # make runs consistent
     seed(42)
     np.random.seed(42)
@@ -162,4 +162,4 @@ def _main():
 
 
 if __name__ == '__main__':
-    _main()
+    main()

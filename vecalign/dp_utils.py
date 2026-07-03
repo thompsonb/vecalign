@@ -23,10 +23,7 @@ from time import time
 
 import numpy as np
 
-import pyximport
-pyximport.install(setup_args={'include_dirs':np.get_include()}, inplace=True, reload_support=True)
-
-from dp_core import make_dense_costs, score_path, sparse_dp, make_sparse_costs, dense_dp
+from .dp_core import make_dense_costs, score_path, sparse_dp, make_sparse_costs, dense_dp
 
 logger = logging.getLogger('vecalign')  # set up in vecalign.py
 

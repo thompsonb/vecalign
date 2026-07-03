@@ -6,4 +6,5 @@ __pycache__/
 *~
 .pytest_cache/
 venv/
-
+vecalign.egg-info/
+pixi.lock

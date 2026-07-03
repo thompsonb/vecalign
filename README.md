@@ -23,28 +23,40 @@ Copyright 2019 Brian Thompson
 Vecalign is released under the [Apache License, Version 2.0](LICENSE).
 For convenience, the dev and test datasets from Bleualign are provided. Bleualign is Copyright 2010 Rico Sennrich and is released under the [GNU General Public License Version 2](bleualign_data/LICENSE)
 
-### Build Vecalign
+### Install Vecalign
 
-You will need python 3.6+ with numpy and cython. You can build an environment using conda as follows:
+Vecalign includes a Cython extension (`dp_core`) that
+is compiled from C via cythonize when installed.
+This requires both a C compiler and the python development headers (e.g. Python.h).
 
+[pixi](https://pixi.prefix.dev/latest/#installation) can handle this by 
+building an isolated environment with a C compiler and the development headers
+and then using uv under the hood to create a virtual python environment with Vecalign.
+From the root directory of this repo:
+
+```console
+pixi install
+pixi shell   # enter the environment (`exit` to leave)
 ```
-# Use latest conda
-conda update conda -y
-# Create conda environment
-conda create  --force -y --name vecalign python=3.7
-# Activate new environment
-source `conda info --base`/etc/profile.d/conda.sh # See: https://github.com/conda/conda/issues/7980
-conda activate vecalign
-# Install required packages
-conda install -y -c anaconda cython
-conda install -y -c anaconda numpy
+
+Alternatively, if you already have a C compiler (e.g. `gcc`/`clang`)
+and python development headers (e.g. `python3-dev`), 
+you should be able to use [uv](https://docs.astral.sh/uv/#installation) directly
+to create a virtual python environment and install Vecalign:
+
+```console
+uv venv
+source .venv/bin/activate
+uv pip install -e .
 ```
 
-Note that Vecalign contains cython code, but there is no need to build it manually as it is compiled automatically by [pyximport](https://github.com/cython/cython/tree/master/pyximport).
+Either method should create a `vecalign` executable. Equivalently,
+you can invoke the module directly with `python -m vecalign.vecalign`.
 
-### Run Vecalign (using provided embeddings)
-```
-./vecalign.py --alignment_max_size 8 --src bleualign_data/dev.de --tgt bleualign_data/dev.fr \
+### Run Vecalign (Using Provided Embeddings)
+
+```console
+vecalign --alignment_max_size 8 --src bleualign_data/dev.de --tgt bleualign_data/dev.fr \
    --src_embed bleualign_data/overlaps.de bleualign_data/overlaps.de.emb  \
    --tgt_embed bleualign_data/overlaps.fr bleualign_data/overlaps.fr.emb
 ```
@@ -74,14 +86,14 @@ Alignments are written to stdout:
 
 The first two entries are the source and target sentence indexes for each alignment, respectively. 
 The third entry in each line is the sentence alignment cost computed by Vecalign. 
-Note that this cost includes normalization but does *not* include the penalties terms for containing more than one sentence. 
+Note that this cost includes normalization but does *not* include the penalty for containing more than one sentence. 
 Note that the alignment cost is set to zero for insertions/deletions. 
 Also note that the results may vary slightly due to randomness in the normalization.
 
 To score against a gold alignment, use the "-g" flag.
-Flags "-s", "-t", and "-g" can accept multiple arguments. This is primarily useful for scoring, as the output alignments will all be concatenated together in stdout. For example, to align and score the bleualign test set: 
-```
-./vecalign.py --alignment_max_size 8 --src bleualign_data/test*.de --tgt bleualign_data/test*.fr \
+Flags "-s", "-t", and "-g" can accept multiple arguments. This is primarily useful for scoring, as the output alignments will all be concatenated together in stdout. For example, to align and score the Bleualign test set: 
+```console
+vecalign --alignment_max_size 8 --src bleualign_data/test*.de --tgt bleualign_data/test*.fr \
    --gold bleualign_data/test*.defr  \
    --src_embed bleualign_data/overlaps.de bleualign_data/overlaps.de.emb  \
    --tgt_embed bleualign_data/overlaps.fr bleualign_data/overlaps.fr.emb > /dev/null
@@ -89,7 +101,6 @@ Flags "-s", "-t", and "-g" can accept multiple arguments. This is primarily usef
 Which should give you results that approximately match the Vecalign paper:
 
 ```
-
  ---------------------------------
 |             |  Strict |    Lax  |
 | Precision   |   0.899 |   0.985 |
@@ -98,8 +109,8 @@ Which should give you results that approximately match the Vecalign paper:
  ---------------------------------
 ```
 
-Note: Run `./vecalign.py -h` for full sentence alignment usage and options. 
-For stand-alone scoring against a gold reference, see [score.py](score.py)
+Note: Run `vecalign -h` for full sentence alignment usage and options. 
+For stand-alone scoring against a gold reference, see [score.py](vecalign/score.py)
 
 ### Embed Your Own Documents
 
@@ -112,25 +123,25 @@ The embeddings of multiple, consecutive sentences are needed to consider 1-many,
 
 
 To create a file containing all the sentence combinations in the dev and test files from Bleualign:
-```
-./overlap.py -i bleualign_data/dev.fr bleualign_data/test*.fr -o bleualign_data/overlaps.fr -n 10
-./overlap.py -i bleualign_data/dev.de bleualign_data/test*.de -o bleualign_data/overlaps.de -n 10
+```console
+python -m vecalign.overlap -i bleualign_data/dev.fr bleualign_data/test*.fr -o bleualign_data/overlaps.fr -n 10
+python -m vecalign.overlap -i bleualign_data/dev.de bleualign_data/test*.de -o bleualign_data/overlaps.de -n 10
 ```
 
-Note: Run `./overlap.py -h` to see full set of embedding options. 
+Note: Run `python -m vecalign.overlap -h` to see full set of embedding options. 
 
 `bleualign_data/overlaps.fr` and `bleualign_data/overlaps.de` are text files containing one or more sentences per line. 
 
 These files must then be embedded using a multilingual sentence embedder.
 
 We recommend the [Language-Agnostic SEntence Representations (LASER)](https://github.com/facebookresearch/LASER) 
-toolkit from Facebook, as it has strong performance and comes with a pretrained model which works well in about 100 languages. 
+toolkit from Facebook, as it has strong performance and comes with pretrained models that work in about 200 languages. 
 However, Vecalign should also work with other embedding methods as well. Embeddings should be provided as a binary file containing float32 values.
 
 The following assumes LASER is installed and the LASER environmental variable has been set.
 
 To embed the Bleualign files using LASER:
-```
+```console
 $LASER/tasks/embed/embed.sh bleualign_data/overlaps.fr bleualign_data/overlaps.fr.emb [fra]
 $LASER/tasks/embed/embed.sh bleualign_data/overlaps.de bleualign_data/overlaps.de.emb [deu]
 ```
@@ -143,7 +154,12 @@ Note that LASER will not overwrite an embedding file if it exists, so you may ne
 
 [We propose](https://aclanthology.org/2020.emnlp-main.483) using Vecalign to rescore document alignment candidates, 
 in conjunction with candidate generation using a document embedding method that retains sentence order information.
-Example code for our document embedding method is provided [here](standalone_document_embedding_demo.py).
+Example code for our document embedding method is provided in
+[standalone_document_embedding_demo.py](vecalign/standalone_document_embedding_demo.py);
+run it with:
+```console
+python -m vecalign.standalone_document_embedding_demo
+```
 
 ### Publications
 

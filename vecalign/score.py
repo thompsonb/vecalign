@@ -23,7 +23,7 @@ from collections import defaultdict
 
 import numpy as np
 
-from dp_utils import read_alignments
+from .dp_utils import read_alignments
 
 """
 Faster implementation of lax and strict precision and recall, based on

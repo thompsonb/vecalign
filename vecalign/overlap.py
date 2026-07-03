@@ -19,7 +19,7 @@ limitations under the License.
 
 import argparse
 
-from dp_utils import yield_overlaps
+from .dp_utils import yield_overlaps
 
 
 def go(output_file, input_files, num_overlaps):

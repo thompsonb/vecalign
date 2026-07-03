@@ -1,0 +1,50 @@
+# Python/Cython/Numpy minimum versions are somewhat conservative to avoid bad
+#   combinations (e.g. Cython<3.0.11 is incompatible with Python>=3.13's
+#   C-API). If this is causing incompatibilities with older modules you can
+#   likely find older version combinations that will work just fine. 
+#
+# In addition to the build-system requirements,
+#   building also requires a C compiler and and the Python development headers
+#   (e.g. Python.h). AFAIK, there is no way to specify these in build-system
+#   because build-system lists python dependencies and these requirements exist
+#   outside the python environment.
+# To use uv or a similar package that only manages python environments, you may
+#   need to run something like (e.g. on ubuntu, with python 3.12):
+#   > sudo apt install build-essential
+#   > sudo apt install python3.12-dev
+# Pixi appears to address this by:
+#   1) allowing us to specify a C compiler dependency
+#   2) limiting python versions to those available in the conda-forge channel,
+#        which, best I can tell, always include development headers
+#
+[build-system]
+requires = [
+    "setuptools>=74",
+    "Cython>=3.1",
+    "numpy>=1.26.4",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vecalign"
+version = "2.0.0"
+description = "Improved Sentence Alignment in Linear Time and Space"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26.4"]
+
+[project.scripts]
+vecalign = "vecalign.vecalign:main"
+
+[tool.setuptools]
+packages = ["vecalign"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
+
+[tool.pixi.dependencies]
+python = ">=3.11"
+c-compiler = "*"
+
+[tool.pixi.pypi-dependencies]
+vecalign = { path = ".", editable = true }
