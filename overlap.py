@@ -43,10 +43,10 @@ def _main():
     parser = argparse.ArgumentParser('Create text file containing overlapping sentences.',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('-i', '--inputs', type=str, nargs='+',
+    parser.add_argument('-i', '--inputs', type=str, nargs='+', required=True,
                         help='input text file(s).')
 
-    parser.add_argument('-o', '--output', type=str,
+    parser.add_argument('-o', '--output', type=str, required=True,
                         help='output text file containing overlapping sentences')
 
     parser.add_argument('-n', '--num_overlaps', type=int, default=4,
