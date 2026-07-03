@@ -20,7 +20,7 @@ import argparse
 import logging
 import pickle
 from math import ceil
-from random import seed as seed
+from random import seed
 
 import numpy as np
 
@@ -51,14 +51,14 @@ def _main():
     parser.add_argument('-t', '--tgt', type=str, nargs='+', required=True,
                         help='preprocessed target file to align')
 
-    parser.add_argument('-g', '--gold_alignment', type=str, nargs='+', required=False,
-                        help='preprocessed target file to align')
+    parser.add_argument('-g', '--gold_alignment', '--gold', type=str, nargs='+', required=False,
+                        help='gold alignment file(s) to score against')
 
     parser.add_argument('--src_embed', type=str, nargs=2, required=True,
-                        help='Source embeddings. Requires two arguments: first is a text file, sencond is a binary embeddings file. ')
+                        help='Source embeddings. Requires two arguments: first is a text file, second is a binary embeddings file. ')
 
     parser.add_argument('--tgt_embed', type=str, nargs=2, required=True,
-                        help='Target embeddings. Requires two arguments: first is a text file, sencond is a binary embeddings file. ')
+                        help='Target embeddings. Requires two arguments: first is a text file, second is a binary embeddings file. ')
 
     parser.add_argument('-a', '--alignment_max_size', type=int, default=4,
                         help='Searches for alignments up to size N-M, where N+M <= this value. Note that the the embeddings must support the requested number of overlaps')
@@ -71,11 +71,11 @@ def _main():
     parser.add_argument('-d', '--del_percentile_frac', type=float, default=0.2,
                         help='Deletion penalty is set to this percentile (as a fraction) of the cost matrix distribution. Should be between 0 and 1.')
 
-    parser.add_argument('-v', '--verbose', help='sets consle to logging.DEBUG instead of logging.WARN',
+    parser.add_argument('-v', '--verbose', help='sets console to logging.DEBUG instead of logging.WARN',
                         action='store_true')
 
     parser.add_argument('--max_size_full_dp', type=int, default=300,
-                        help='Maximum size N for which is is acceptable to run full N^2 dynamic programming.')
+                        help='Maximum size N for which it is acceptable to run full N^2 dynamic programming.')
 
     parser.add_argument('--costs_sample_size', type=int, default=20000,
                         help='Sample size to estimate costs distribution, used to set deletion penalty in conjunction with deletion_percentile.')
@@ -102,7 +102,6 @@ def _main():
             raise Exception('number of gold alignment files, if provided, must match number of source and target files')
 
     if args.verbose:
-        import logging
         logger.setLevel(logging.INFO)
 
     if args.alignment_max_size < 2:
@@ -122,10 +121,12 @@ def _main():
     for src_file, tgt_file in zip(args.src, args.tgt):
         logger.info('Aligning src="%s" to tgt="%s"', src_file, tgt_file)
 
-        src_lines = open(src_file, 'rt', encoding="utf-8").readlines()
+        with open(src_file, 'rt', encoding="utf-8") as fin:
+            src_lines = fin.readlines()
         vecs0 = make_doc_embedding(src_sent2line, src_line_embeddings, src_lines, src_max_alignment_size)
 
-        tgt_lines = open(tgt_file, 'rt', encoding="utf-8").readlines()
+        with open(tgt_file, 'rt', encoding="utf-8") as fin:
+            tgt_lines = fin.readlines()
         vecs1 = make_doc_embedding(tgt_sent2line, tgt_line_embeddings, tgt_lines, tgt_max_alignment_size)
 
         if args.one_to_many is not None:

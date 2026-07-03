@@ -25,7 +25,8 @@ from dp_utils import yield_overlaps
 def go(output_file, input_files, num_overlaps):
     output = set()
     for fin in input_files:
-        lines = open(fin, 'rt', encoding="utf-8").readlines()
+        with open(fin, 'rt', encoding="utf-8") as f:
+            lines = f.readlines()
         for out_line in yield_overlaps(lines, num_overlaps):
             output.add(out_line)
 
@@ -46,7 +47,7 @@ def _main():
                         help='input text file(s).')
 
     parser.add_argument('-o', '--output', type=str,
-                        help='output text file containing overlapping sentneces')
+                        help='output text file containing overlapping sentences')
 
     parser.add_argument('-n', '--num_overlaps', type=int, default=4,
                         help='Maximum number of allowed overlaps.')

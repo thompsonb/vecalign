@@ -35,7 +35,7 @@ def make_x_y_offsets(alignment_types):
     return x_offsets, y_offsets
 
 
-def make_dense_costs(np.ndarray[float, ndim=3] vecs0,  # itput
+def make_dense_costs(np.ndarray[float, ndim=3] vecs0,  # input
                      np.ndarray[float, ndim=3] vecs1,  # input
                      np.ndarray[float, ndim=2] norm0,  # input
                      np.ndarray[float, ndim=2] norm1,  # input
@@ -170,9 +170,9 @@ def score_path(np.ndarray[int, ndim=1] xx,
 @cython.boundscheck(False)  # turn off bounds-checking for entire function
 @cython.wraparound(False)  # turn off negative index wrapping for entire function
 @cython.cdivision(True)  # use c-style division (no division-by-zero check)
-def make_sparse_costs(np.ndarray[float, ndim=3] vecs0,  # intput: num aligns X num sents X dim
+def make_sparse_costs(np.ndarray[float, ndim=3] vecs0,  # input: num aligns X num sents X dim
                       np.ndarray[float, ndim=3] vecs1,  # input
-                      np.ndarray[float, ndim=2] norms0,  # intput: num aligns X num sents
+                      np.ndarray[float, ndim=2] norms0,  # input: num aligns X num sents
                       np.ndarray[float, ndim=2] norms1,  # input
                       x_y_path,
                       alignment_types,
@@ -181,7 +181,7 @@ def make_sparse_costs(np.ndarray[float, ndim=3] vecs0,  # intput: num aligns X n
     Make features for DP, *for lines running across approximate path*, *for each alignment type*
     x_offsets, y_offsets should not include (0,1), (1,0)
 
-    Basically, we take the feature matrix, rotate it 45 degress, 
+    Basically, we take the feature matrix, rotate it 45 degrees,
        and compute a "wavy" matrix for the features.
     It's like the diagonal but it moves around to hopefully always include the true path.
     """
@@ -207,17 +207,17 @@ def make_sparse_costs(np.ndarray[float, ndim=3] vecs0,  # intput: num aligns X n
 
     # note: alignment types are specified 1-based, but vectors are stored 0-based
     if max_x_overlap > num_overlaps_in_vecs0:
-        raise Exception('%d x overlaps requrested (via alignment_types), but vecs0 only has %d' % (
+        raise Exception('%d x overlaps requested (via alignment_types), but vecs0 only has %d' % (
             max_x_overlap, num_overlaps_in_vecs0))
     if max_y_overlap > num_overlaps_in_vecs1:
-        raise Exception('%d y overlaps requrested (via alignment_types), but vecs1 only has %d' % (
+        raise Exception('%d y overlaps requested (via alignment_types), but vecs1 only has %d' % (
             max_y_overlap, num_overlaps_in_vecs1))
 
     # number of sentences in each document
     cdef int xsize = vecs0.shape[1]
     cdef int ysize = vecs1.shape[1]
 
-    # vector diminsions should match
+    # vector dimensions should match
     assert (vecs0.shape[2] == vecs1.shape[2])
 
     cdef np.ndarray[int, ndim=1] x_offsets, y_offsets
@@ -227,7 +227,7 @@ def make_sparse_costs(np.ndarray[float, ndim=3] vecs0,  # intput: num aligns X n
     a_len = x_y_path_.shape[0]
     b_len = 2 * width_over2
     cdef np.ndarray[float, ndim=3] a_b_feats = np.empty((len(alignment_types), a_len, b_len), dtype=np.float32)
-    cdef np.ndarray[int, ndim=1] b_offset = np.empty(a_len).astype(np.int32)
+    cdef np.ndarray[int, ndim=1] b_offset = np.empty(a_len, dtype=np.int32)
 
     cdef int x, y, aa, bb, xx, yy, a_idx, b_idx, bb2, x_offset, y_offset, ii_align, x_offset_idx, y_offset_idx
     cdef int vecsize = vecs0.shape[2]
@@ -285,10 +285,10 @@ def sparse_dp(np.ndarray[float, ndim=3] a_b_costs,
     xsize, ysize refer to the costs a_b_csum, but in x/y space
 
     As in the simpler full-DP case, 
-       we compute cumulative costs and backpointers on notes,
+       we compute cumulative costs and backpointers on nodes,
        and there are COSTS associated with moving between them.
 
-    This means the size of the notes  +1,+1 larger (in x,y) than the COSTS.
+    This means the size of the nodes  +1,+1 larger (in x,y) than the COSTS.
     
     So the size of a_b_csum, a_b_xp, a_b_yp are all one larger in x and y compared to the costs
 

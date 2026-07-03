@@ -2,7 +2,7 @@
 
 Vecalign is an accurate sentence alignment algorithm which is fast even for very long documents.
 In conjunction with [LASER](https://github.com/facebookresearch/LASER), Vecalign 
-works in about 100 languages (i.e. 100^2 language pairs), 
+works in about 200 languages (i.e. 200^2 language pairs),
 without the need for a machine translation system or lexicon. 
 
 Vecalign uses similarity of multilingual sentence embeddings to judge the similarity of sentences.
@@ -14,7 +14,7 @@ Vecalign uses an approximation to Dynamic Programming based on
 [Fast Dynamic Time Warping](https://content.iospress.com/articles/intelligent-data-analysis/ida00303)
 which is linear in time and space with respect to the number of sentences being aligned. 
 
-![dynamic_programing_approximation visualization](media/dynamic_programing_approximation.gif)
+![dynamic_programming_approximation visualization](media/dynamic_programming_approximation.gif)
 
 ### License 
 
@@ -102,9 +102,9 @@ Which should give you results that approximately match the Vecalign paper:
 Note: Run `./vecalign.py -h` for full sentence alignment usage and options. 
 For stand-alone scoring against a gold reference, see [score.py](score.py)
 
-### Embed your own documents
+### Embed Your Own Documents
 
-The Vecalign repository contains overlap and embedding files for the Bluealign dev/test files. 
+The Vecalign repository contains overlap and embedding files for the Bleualign dev/test files.
 This section shows how those files were made, as an example for running on new data.
 
 Vecalign requires not only embeddings of sentences in each document, 
@@ -138,7 +138,7 @@ $LASER/tasks/embed/embed.sh bleualign_data/overlaps.de bleualign_data/overlaps.d
 
 > Please always refer [here](https://github.com/facebookresearch/LASER/blob/main/tasks/embed/README.md) for the latest usage of this script. The usage may vary across the different versions of LASER.
 
-Note that LASER will not overwrite an embedding file if it exsts, so you may need to run first `rm bleualign_data/overlaps.fr.emb bleualign_data/overlaps.de.emb`.
+Note that LASER will not overwrite an embedding file if it exists, so you may need to run first `rm bleualign_data/overlaps.fr.emb bleualign_data/overlaps.de.emb`.
 
 ### Document Alignment
 

@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 
 """
@@ -49,7 +48,7 @@ np.set_printoptions(threshold=50, precision=5)
     
 
 def build_doc_embedding(sent_vecs, sent_counts):
-    # ensure sentence counds are >= 1
+    # ensure sentence counts are >= 1
     sent_counts = np.clip(sent_counts, a_min=1, a_max=None)
 
     # scale each sent vec by 1/count
@@ -81,17 +80,17 @@ def build_doc_embedding(sent_vecs, sent_counts):
 
 def demo():
 
-    # Replace sent_vecs with laser/LaBSE/etc embeddings of each sentence in your document,
+    # USER TODO: Replace sent_vecs with laser/LaBSE/etc embeddings of each sentence in your document,
     #    after projecting the sentence embeddings into a lower-dimensional space using something like PCA (see paper for details).
     sent_emb_size = 32  # Document embedding size will be sent_emb_size * NUM_TIME_SLOTS
     n_sents = 7
     sent_vecs = np.random.rand(n_sents, sent_emb_size)-0.5
-    
-    # Replace sent_counts with the number of times each sentence has been seen in your corpus.
+
+    # USER TODO: Replace sent_counts with the number of times each sentence has been seen in your corpus.
     sent_counts = np.random.randint(low=1, high=50, size=n_sents)
 
     doc_emb = build_doc_embedding(sent_vecs, sent_counts)
-    
+
     print('Document Embedding:', doc_emb)
     print('Document Embedding Size:', doc_emb.shape)
 

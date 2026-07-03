@@ -49,8 +49,8 @@ def yield_overlaps(lines, num_overlaps):
 
 def read_in_embeddings(text_file, embed_file):
     """
-    Given a text file with candidate sentences and a corresponing embedding file,
-       make a maping from candidate sentence to embedding index, 
+    Given a text file with candidate sentences and a corresponding embedding file,
+       make a mapping from candidate sentence to embedding index,
        and a numpy array of the embeddings
     """
     sent2line = dict()
@@ -135,12 +135,12 @@ def read_alignments(fin):
             try:
                 src = literal_eval(fields[0])
                 tgt = literal_eval(fields[1])
-            except:
+            except Exception:
                 raise Exception('Failed to parse line "%s"' % line.strip())
             alignments.append((src, tgt))
 
-    # I know bluealign files have a few entries entries missing,
-    #   but I don't fix them in order to be consistent previous reported scores
+    # I know bluealign files have a few entries missing,
+    #   but I don't fix them in order to be consistent with previously reported scores
     return alignments
 
 
@@ -237,7 +237,7 @@ def process_scores(scores, alignments):
         # deletion penalty is pretty arbitrary, just report 0
         if len(x_algn) == 0 or len(y_algn) == 0:
             scores[ii] = 0.0
-        # report sores un-normalized by alignment sizes
+        # report scores un-normalized by alignment sizes
         #    (still normalized with random vectors, though)
         else:
             scores[ii] = scores[ii] / len(x_algn) / len(y_algn)
@@ -352,7 +352,6 @@ def alignment_to_search_path(algn):
     """
     path = [(0, 0), ]
     xdel, ydel = 0, 0
-    ydel = 0
     for x, y in algn:
         if len(x) and len(y):
             append_slant(path, xdel, ydel)
@@ -368,15 +367,15 @@ def alignment_to_search_path(algn):
     return path
 
 
-def extend_alignments(course_alignments, size0, size1):
+def extend_alignments(coarse_alignments, size0, size1):
     """
     extend alignments to include new endpoints size0, size1
     if alignments are larger than size0/size1, raise exception
     """
     # could be a string of deletions or insertions at end, so cannot just grab last one
-    xmax = 0  # maximum x value in course_alignments
-    ymax = 0  # maximum y value in course_alignments
-    for x, y in course_alignments:
+    xmax = 0  # maximum x value in coarse_alignments
+    ymax = 0  # maximum y value in coarse_alignments
+    for x, y in coarse_alignments:
         for xval in x:
             xmax = max(xmax, xval)
         for yval in y:
@@ -393,12 +392,12 @@ def extend_alignments(course_alignments, size0, size1):
 
     if len(extra_x) == 0:
         for yval in extra_y:
-            course_alignments.append(([], [yval]))
+            coarse_alignments.append(([], [yval]))
     elif len(extra_y) == 0:
         for xval in extra_x:
-            course_alignments.append(([xval], []))
+            coarse_alignments.append(([xval], []))
     else:
-        course_alignments.append((extra_x, extra_y))
+        coarse_alignments.append((extra_x, extra_y))
 
 
 def upsample_alignment(algn):
@@ -475,14 +474,14 @@ def compute_norms(vecs0, vecs1, num_samples, overlaps_to_use=None):
 
     if overlaps_to_use is not None:
         if overlaps_to_use > overlaps1:
-            raise Exception('Cannot use more overlaps than provided. You may want to re-run make_verlaps.py with a larger -n value')
+            raise Exception('Cannot use more overlaps than provided. You may want to re-run overlap.py with a larger -n value')
     else:
         overlaps_to_use = overlaps1
 
     samps_per_overlap = ceil(num_samples / overlaps_to_use)
 
     if size1 and samps_per_overlap:
-        # sample other size (from all overlaps) to compre to this side
+        # sample other size (from all overlaps) to compare to this side
         vecs1_rand_sample = np.empty((samps_per_overlap * overlaps_to_use, dim), dtype=np.float32)
         for overlap_ii in range(overlaps_to_use):
             idxs = np.random.choice(range(size1), size=samps_per_overlap, replace=True)
@@ -569,8 +568,8 @@ def vecalign(vecs0,
 
         if depth == 0 and norms0 is not None:
             if norms0.shape != vecs0.shape[:2]:
-                print('norms0.shape:', norms0.shape)
-                print('vecs0.shape[:2]:', vecs0.shape[:2])
+                logger.error('norms0.shape: %s', norms0.shape)
+                logger.error('vecs0.shape[:2]: %s', vecs0.shape[:2])
                 raise Exception('norms0 wrong shape')
             stack[depth]['n0'] = norms0
         else:
@@ -578,8 +577,8 @@ def vecalign(vecs0,
 
         if depth == 0 and norms1 is not None:
             if norms1.shape != vecs1.shape[:2]:
-                print('norms1.shape:', norms1.shape)
-                print('vecs1.shape[:2]:', vecs1.shape[:2])
+                logger.error('norms1.shape: %s', norms1.shape)
+                logger.error('vecs1.shape[:2]: %s', vecs1.shape[:2])
                 raise Exception('norms1 wrong shape')
             stack[depth]['n1'] = norms1
         else:
@@ -620,17 +619,17 @@ def vecalign(vecs0,
     dp_times = []
     upsample_depths = [0, ] if max_depth == 0 else list(reversed(range(0, max_depth)))
     for depth in upsample_depths:
-        if max_depth > 0:  # upsample previoius alignment to current resolution
-            course_alignments = upsample_alignment(stack[depth + 1]['alignments'])
+        if max_depth > 0:  # upsample previous alignment to current resolution
+            coarse_alignments = upsample_alignment(stack[depth + 1]['alignments'])
             # features may have been truncated when downsampleing, so alignment may need extended
-            extend_alignments(course_alignments, stack[depth]['size0'], stack[depth]['size1'])  # in-place
+            extend_alignments(coarse_alignments, stack[depth]['size0'], stack[depth]['size1'])  # in-place
         else:  # We did a full size 1-1 search, so search same size with more alignment types
-            course_alignments = stack[0]['alignments']
+            coarse_alignments = stack[0]['alignments']
 
-        # convert couse alignments to a searchpath
-        stack[depth]['searchpath'] = alignment_to_search_path(course_alignments)
+        # convert coarse alignments to a searchpath
+        stack[depth]['searchpath'] = alignment_to_search_path(coarse_alignments)
 
-        # compute ccosts for sparse DP
+        # compute costs for sparse DP
         t0 = time()
         stack[depth]['a_b_costs'], stack[depth]['b_offset'] = make_sparse_costs(stack[depth]['v0'], stack[depth]['v1'],
                                                                                 stack[depth]['n0'], stack[depth]['n1'],
@@ -653,7 +652,7 @@ def vecalign(vecs0,
                                                  stack[depth]['alignment_types'], stack[depth]['del_penalty'],
                                                  stack[depth]['size0'], stack[depth]['size1'])
 
-        # performace traceback to get alignments and alignment scores
+        # perform traceback to get alignments and alignment scores
         # for debugging, avoid overwriting stack[depth]['alignments']
         akey = 'final_alignments' if depth == 0 else 'alignments'
         stack[depth][akey], stack[depth]['alignment_scores'] = sparse_traceback(stack[depth]['a_b_csum'],
